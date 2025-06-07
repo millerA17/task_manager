@@ -2003,5 +2003,46 @@
       loadData();
     });
   </script>
+  <script>
+  window.addEventListener('DOMContentLoaded', () => {
+    fetch('backup.json')
+      .then(res => {
+        if (!res.ok) throw new Error('backup.json not found');
+        return res.json();
+      })
+      .then(backupData => {
+        // must match the structure your app uses on import
+        if (
+          backupData &&
+          backupData.data &&
+          backupData.data.projects &&
+          backupData.data.tasks
+        ) {
+          // copy the same logic from your importBackup() function:
+          projects = backupData.data.projects;
+          tasks = backupData.data.tasks;
+          weeklyMatrix = backupData.data.weeklyMatrix || {};
+          weeklyTaskCategories =
+            backupData.data.weeklyTaskCategories || [];
+          backupSettings =
+            backupData.data.backupSettings || backupSettings;
+
+          // re-render everything:
+          sortProjectsArray();
+          saveData();
+          updateProjectSelector();
+          updateProjectsList();
+          updateWeeklyMatrix();
+          updateMasterView();
+          showRecentTasks();
+        } else {
+          console.warn('backup.json has wrong format');
+        }
+      })
+      .catch(err => {
+        console.warn('Could not auto-import backup.json:', err);
+      });
+  });
+</script>
 </body>
 </html>
