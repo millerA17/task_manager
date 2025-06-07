@@ -1,0 +1,2007 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Project Task Manager</title>
+  <style>
+    /* ------------------------------------------ */
+    /* GLOBAL RESET + BODY STYLES */
+    /* ------------------------------------------ */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
+        Ubuntu, Cantarell, sans-serif;
+      background: linear-gradient(135deg, #F5F7FA 0%, #E5E7EB 100%);
+      color: #333;
+      min-height: 100vh;
+      padding-top: 70px;
+    }
+    button {
+      cursor: pointer;
+    }
+
+    /* ------------------------------------------ */
+    /* STICKY NAVBAR */
+    /* ------------------------------------------ */
+    .nav-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 1000;
+      background: #1E3A8A;
+      color: white;
+      padding: 15px 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .nav-title {
+      font-size: 1.8rem;
+      font-weight: 700;
+    }
+    .nav-buttons {
+      display: flex;
+      gap: 12px;
+    }
+    .nav-btn {
+      background: #4F6D95;
+      border: none;
+      border-radius: 8px;
+      padding: 8px 14px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: white;
+      transition: background 0.2s ease;
+    }
+    .nav-btn:hover {
+      background: #6B85B5;
+    }
+    .nav-btn.active {
+      background: #00A5E2;
+    }
+
+    /* ------------------------------------------ */
+    /* CONTAINER & PAGE STRUCTURE */
+    /* ------------------------------------------ */
+    .container {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    
+    .page {
+      display: none;
+    }
+    .page.active {
+      display: block;
+    }
+
+    /* ------------------------------------------ */
+    /* PAGE HEADER CARD */
+    /* ------------------------------------------ */
+    .page-header {
+      background: white;
+      border-radius: 12px;
+      padding: 20px 30px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .page-header h2 {
+      font-size: 1.5rem;
+      color: #374151;
+      margin: 0;
+    }
+    .action-buttons {
+      display: flex;
+      gap: 10px;
+    }
+    .action-button {
+      background: #00A5E2;
+      border: none;
+      color: white;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: filter 0.2s ease;
+    }
+    .action-button:hover {
+      filter: brightness(1.1);
+    }
+    .action-button.secondary {
+      background: #6c757d;
+    }
+    .action-button.success {
+      background: #28a745;
+    }
+    .action-button.info {
+      background: #17a2b8;
+    }
+
+    /* ------------------------------------------ */
+    /* GENERAL STYLES */
+    /* ------------------------------------------ */
+    .empty-state {
+      text-align: center;
+      padding: 40px;
+      color: #666;
+      font-style: italic;
+    }
+
+    .add-btn {
+      background: #667eea;
+      border: none;
+      color: white;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-weight: 600;
+      transition: filter 0.2s ease;
+    }
+    .add-btn:hover {
+      filter: brightness(1.1);
+    }
+    .add-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    /* ------------------------------------------ */
+    /* QUICK CAPTURE */
+    /* ------------------------------------------ */
+    .quick-capture {
+      background: white;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      margin-bottom: 30px;
+    }
+    .capture-header {
+      display: flex;
+      justify-content: flex-start;
+      align-items: flex-end;
+      margin-bottom: 15px;
+      gap: 20px;
+    }
+    .project-selector {
+      display: flex;
+      flex-direction: column;
+    }
+    .project-selector label {
+      font-weight: 500;
+      font-size: 0.9rem;
+      margin-bottom: 4px;
+      color: #555;
+    }
+    .project-selector select {
+      width: 150px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      padding: 6px 10px;
+      font-size: 0.95rem;
+    }
+    .note-input {
+      width: 100%;
+      min-height: 150px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      padding: 10px;
+      font-size: 1rem;
+      margin-bottom: 10px;
+      resize: vertical;
+    }
+    .current-project {
+      font-weight: 600;
+      font-size: 1rem;
+      color: #444;
+      align-self: flex-end;
+    }
+
+    #recentTasks {
+      background: white;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+    #recentTasks h3 {
+      margin-bottom: 15px;
+      font-size: 1.2rem;
+      color: #333;
+    }
+    .recent-item {
+      border-bottom: 1px solid #e2e8f0;
+      padding: 12px 0;
+    }
+    .recent-item:last-child {
+      border-bottom: none;
+    }
+    .recent-item .project-line {
+      font-weight: 600;
+      font-size: 1rem;
+      color: #333;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 4px;
+    }
+    .recent-item .project-line .project-color-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+    .recent-item .date-line {
+      font-size: 0.9rem;
+      color: #666;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 4px;
+    }
+    .recent-item .date-line .meeting-type-badge {
+      background: #4fc3f7;
+      color: white;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      padding: 2px 8px;
+      font-weight: 500;
+    }
+    .recent-item .content-line {
+      font-size: 1rem;
+      color: #333;
+      margin-top: 4px;
+      white-space: pre-wrap;
+    }
+
+    /* ------------------------------------------ */
+    /* ALL TASKS (Master View) */
+    /* ------------------------------------------ */
+    .master-stats {
+      display: flex;
+      gap: 25px;
+      margin-bottom: 20px;
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+    .stat-item {
+      text-align: center;
+      flex: 1;
+    }
+    .stat-number {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #1E3A8A;
+    }
+    .stat-label {
+      font-size: 0.9rem;
+      color: #666;
+      margin-top: 4px;
+    }
+
+    #masterContent .project-block {
+      background: white;
+      border-radius: 10px;
+      margin-bottom: 25px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      overflow: hidden;
+    }
+    .project-header {
+      padding: 15px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    .project-header .left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .project-header .project-color-dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+    .project-header .project-name {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: #333;
+    }
+    .project-header .meta-info {
+      font-size: 0.9rem;
+      color: #555;
+      margin-left: 20px;
+    }
+    .project-header .project-status-badge {
+      display: inline-block;
+      font-size: 0.75rem;
+      font-weight: 600;
+      border-radius: 8px;
+      padding: 2px 8px;
+      vertical-align: middle;
+      margin-left: 20px;
+    }
+    .status-active {
+      background: #81c784;
+      color: white;
+    }
+    .status-archived {
+      background: #e57373;
+      color: white;
+    }
+    .project-header .go-live-badge {
+      display: inline-block;
+      background: #90caf9;
+      color: #1e3a8a;
+      font-size: 0.75rem;
+      border-radius: 8px;
+      padding: 2px 8px;
+      margin-left: 20px;
+    }
+
+    .project-body {
+      padding: 15px 20px;
+    }
+    .project-body h4 {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 10px;
+      color: #333;
+    }
+    .task-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 8px 0;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    .task-row:last-child {
+      border-bottom: none;
+    }
+    .task-row input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+    }
+    .task-row .task-text {
+      flex: 1;
+      font-size: 1rem;
+      color: #333;
+      white-space: pre-wrap;
+    }
+    .task-row .meeting-badge {
+      background: #4fc3f7;
+      color: white;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      padding: 2px 8px;
+      margin-left: 12px;
+      font-weight: 500;
+    }
+    .task-row .task-timestamp {
+      font-size: 0.75rem;
+      color: #666;
+      margin-left: 12px;
+    }
+    .task-row .edit-btn,
+    .task-row .delete-btn {
+      background: none;
+      border: none;
+      font-size: 1.1rem;
+      cursor: pointer;
+      margin-left: 10px;
+    }
+    .task-row .edit-btn:hover {
+      color: #1e40af;
+    }
+    .task-row .delete-btn:hover {
+      color: #c62828;
+    }
+
+    .completed-section {
+      margin-top: 15px;
+      border-top: 1px solid #e2e8f0;
+    }
+    .completed-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #555;
+      cursor: pointer;
+      padding: 8px 0;
+    }
+    .completed-header .arrow {
+      font-size: 1rem;
+    }
+    .completed-list {
+      padding: 8px 0 0 0;
+    }
+    .completed-list .task-row {
+      background: #f6f8fa;
+    }
+    .completed-list .task-row .task-text {
+      text-decoration: line-through;
+      color: #999;
+    }
+
+    /* ------------------------------------------ */
+    /* WEEKLY MATRIX */
+    /* ------------------------------------------ */
+    .weekly-matrix-container {
+      background: white;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      margin-bottom: 30px;
+    }
+    .matrix-wrapper {
+      overflow-x: auto;
+      overflow-y: auto;
+      max-height: 600px;
+    }
+    .matrix-table {
+      border-collapse: collapse;
+      width: 100%;
+      min-width: 800px;
+    }
+    .matrix-table th,
+    .matrix-table td {
+      border: 1px solid #e2e8f0;
+      padding: 10px;
+      text-align: center;
+      font-size: 0.9rem;
+    }
+    .matrix-table th {
+      background: #1E3A8A;
+      color: white;
+      font-weight: 600;
+      position: sticky;
+      top: 0;
+      z-index: 5;
+    }
+    .matrix-table .task-name {
+      background: #f8f9fa;
+      font-weight: 500;
+      text-align: left;
+      position: sticky;
+      left: 0;
+      z-index: 4;
+      min-width: 220px;
+    }
+    .matrix-table .category-row {
+      background: #e3f2fd !important;
+      font-weight: 600;
+      color: #1976d2;
+    }
+    .matrix-table .category-row td {
+      border-top: 2px solid #1E3A8A;
+      border-bottom: 2px solid #1E3A8A;
+    }
+    .matrix-table input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+    }
+
+    /* ------------------------------------------ */
+    /* FORMS */
+    /* ------------------------------------------ */
+    .form-section {
+      background: #f8f9fa;
+      border-radius: 10px;
+      padding: 20px;
+      margin-top: 20px;
+    }
+    .form-section h4 {
+      margin-bottom: 15px;
+      color: #333;
+    }
+    .form-row {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 15px;
+    }
+    .form-row > div {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+    .form-row label {
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: #333;
+      margin-bottom: 5px;
+    }
+    .form-input,
+    .form-select {
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      padding: 8px 10px;
+      font-size: 0.95rem;
+    }
+
+    /* ------------------------------------------ */
+    /* EDIT TASK CATEGORIES */
+    /* ------------------------------------------ */
+    #editTasksList .edit-category-item {
+      margin-bottom: 15px;
+      border-bottom: 1px solid #e2e8f0;
+      padding-bottom: 8px;
+    }
+    #editTasksList .edit-controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+    #editTasksList .edit-controls button {
+      background: none;
+      border: none;
+      font-size: 1rem;
+      cursor: pointer;
+      padding: 2px 6px;
+      border-radius: 4px;
+      transition: background 0.2s;
+    }
+    #editTasksList .edit-controls button:hover {
+      background: #e2e8f0;
+    }
+    #editTasksList .edit-controls input[type="text"] {
+      flex: 1;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      padding: 6px 8px;
+      font-size: 0.95rem;
+    }
+    #editTasksList .edit-category-item textarea {
+      width: 100%;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      padding: 6px;
+      font-size: 0.9rem;
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    /* ------------------------------------------ */
+    /* MANAGE PROJECTS */
+    /* ------------------------------------------ */
+    .project-form {
+      background: #fff;
+      border: 2px solid #e9ecef;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      padding: 20px;
+    }
+    .project-form h3 {
+      margin-bottom: 15px;
+      color: #333;
+    }
+
+    .projects-list {
+      background: white;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      margin-bottom: 30px;
+    }
+    .projects-list .project-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      border-bottom: 1px solid #e2e8f0;
+      padding: 15px 20px;
+    }
+    .projects-list .project-item:last-child {
+      border-bottom: none;
+    }
+    .projects-list .project-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .projects-list .project-meta {
+      font-size: 0.85rem;
+      color: #666;
+      margin-top: 4px;
+    }
+    .projects-list .project-meta .project-status-badge {
+      display: inline-block;
+      font-size: 0.75rem;
+      font-weight: 600;
+      border-radius: 8px;
+      padding: 2px 8px;
+      vertical-align: middle;
+      margin-left: 12px;
+    }
+    .project-actions .action-btn {
+      background: #e2e8f0;
+      border: none;
+      border-radius: 6px;
+      padding: 6px 12px;
+      font-size: 0.85rem;
+      color: #333;
+      margin-left: 8px;
+      transition: filter 0.2s ease;
+    }
+    .project-actions .action-btn:hover {
+      filter: brightness(1.1);
+    }
+    .project-color-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    /* ------------------------------------------ */
+    /* TEAM & RECURRING SECTIONS */
+    /* ------------------------------------------ */
+    .team-section,
+    .recurring-section {
+      margin-top: 20px;
+      border-top: 1px solid #e2e8f0;
+      padding-top: 15px;
+    }
+    .team-section h4,
+    .recurring-section h4 {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 10px;
+      color: #333;
+    }
+    .team-item,
+    .recurring-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 6px 0;
+      font-size: 0.95rem;
+      color: #333;
+    }
+    .team-item button,
+    .recurring-item button {
+      background: none;
+      border: none;
+      font-size: 1rem;
+      color: #c62828;
+      cursor: pointer;
+    }
+    .team-item button:hover,
+    .recurring-item button:hover {
+      color: #941e1e;
+    }
+
+    /* Hidden file input styling */
+    input[type="file"] {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <!-- STICKY NAVBAR -->
+  <div class="nav-bar">
+    <div class="nav-title">Project Task Manager</div>
+    <div class="nav-buttons">
+      <button class="nav-btn active" onclick="showPage('capture')">Quick Capture</button>
+      <button class="nav-btn" onclick="showPage('master')">All Tasks</button>
+      <button class="nav-btn" onclick="showPage('weekly')">Weekly Matrix</button>
+      <button class="nav-btn" onclick="showPage('projects')">Manage Projects</button>
+    </div>
+  </div>
+
+  <div class="container">
+    <!-- ============================================ -->
+    <!--           QUICK CAPTURE PAGE -->
+    <!-- ============================================ -->
+    <div id="capturePage" class="page active">
+      <div class="page-header">
+        <h2>Quick Capture</h2>
+        <div class="action-buttons">
+          <button class="action-button success" onclick="exportBackup()">
+            💾 Backup All Data
+          </button>
+          <button class="action-button info" onclick="document.getElementById('quickImportFile').click()">
+            📁 Restore Backup
+          </button>
+          <input type="file" id="quickImportFile" accept=".json" onchange="importBackup(event)" />
+        </div>
+      </div>
+
+      <div class="quick-capture">
+        <div class="capture-header">
+          <div class="project-selector">
+            <label for="projectSelect">Select Project</label>
+            <select id="projectSelect">
+              <option value="">Select Project...</option>
+            </select>
+          </div>
+          <div class="project-selector">
+            <label for="meetingTypeSelect">Meeting Type</label>
+            <select id="meetingTypeSelect">
+              <option value="Internal Status">Internal Status</option>
+              <option value="Client Status">Client Status</option>
+              <option value="Client Meeting" selected>Client Meeting</option>
+              <option value="General">General</option>
+            </select>
+          </div>
+          <div class="current-project" id="currentProject">No Project Selected</div>
+        </div>
+        <textarea
+          id="noteInput"
+          class="note-input"
+          placeholder="Quick notes, action items, follow-ups…"
+        ></textarea>
+        <button id="addNote" class="add-btn">Add Task</button>
+      </div>
+
+      <div id="recentTasks">
+        <h3>Recent Tasks Added</h3>
+        <div id="recentTasksList" class="empty-state">No tasks added today</div>
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!--           ALL TASKS (MASTER) PAGE -->
+    <!-- ============================================ -->
+    <div id="masterPage" class="page">
+      <div class="page-header">
+        <h2>All Tasks</h2>
+        <div class="action-buttons">
+          <button class="action-button success" onclick="exportBackup()">💾 Backup Data</button>
+          <button class="action-button info" onclick="document.getElementById('importFile').click()">📁 Import Data</button>
+          <input type="file" id="importFile" accept=".json" onchange="importBackup(event)" />
+          <button class="action-button" onclick="exportData()">📊 Export All Data</button>
+        </div>
+      </div>
+
+      <div class="master-stats">
+        <div class="stat-item">
+          <div class="stat-number" id="totalTasksCount">0</div>
+          <div class="stat-label">Total Tasks</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number" id="pendingTasksCount">0</div>
+          <div class="stat-label">Pending</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number" id="completedTasksCount">0</div>
+          <div class="stat-label">Completed</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number" id="activeProjectsCount">0</div>
+          <div class="stat-label">Active Projects</div>
+        </div>
+      </div>
+
+      <div id="masterContent">
+        <!-- Project blocks will be injected here -->
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!--           WEEKLY MATRIX PAGE -->
+    <!-- ============================================ -->
+    <div id="weeklyPage" class="page">
+      <div class="page-header">
+        <h2>Weekly Task Matrix</h2>
+        <div class="action-buttons">
+          <button class="action-button" onclick="showAddTaskForm()">➕ Add Category</button>
+          <button class="action-button" onclick="showEditTasksForm()">✏️ Edit Categories</button>
+          <button class="action-button secondary" onclick="resetMatrix()">♻️ Reset Matrix</button>
+          <button class="action-button success" onclick="exportBackup()">💾 Backup</button>
+          <button class="action-button" onclick="exportMatrix()">📊 Export Matrix</button>
+        </div>
+      </div>
+
+      <div class="weekly-matrix-container">
+        <div class="matrix-wrapper">
+          <div id="weeklyMatrix">
+            <!-- Matrix table is injected here by JS -->
+          </div>
+        </div>
+
+        <!-- ADD TASK CATEGORY FORM (hidden by default) -->
+        <div id="addTaskForm" class="form-section" style="display: none;">
+          <h4>Add New Task Category</h4>
+          <div class="form-row">
+            <input type="text" id="newCategoryName" class="form-input" placeholder="Category Name (e.g., 'Quality Assurance')" />
+            <button class="add-btn" onclick="addTaskCategory()">Add Category</button>
+            <button class="add-btn" style="background: #6c757d;" onclick="hideAddTaskForm()">Cancel</button>
+          </div>
+          <div class="form-row">
+            <textarea id="newCategoryTasks" class="note-input" placeholder="Enter each task on its own line&#10;(e.g. &#10;Task 1&#10;Task 2&#10;Task 3)" style="min-height: 100px;"></textarea>
+          </div>
+        </div>
+
+        <!-- EDIT TASK CATEGORIES (with up/down arrows) -->
+        <div id="editTasksForm" class="form-section" style="display: none;">
+          <h4>Edit Task Categories</h4>
+          <div id="editTasksList"></div>
+          <button class="add-btn" onclick="saveTaskEdits()">Save Changes</button>
+          <button class="add-btn" style="background: #6c757d;" onclick="hideEditTasksForm()">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!--           MANAGE PROJECTS PAGE -->
+    <!-- ============================================ -->
+    <div id="projectsPage" class="page">
+      <div class="page-header">
+        <h2>Manage Projects</h2>
+        <div class="action-buttons">
+          <button class="action-button secondary" onclick="showBackupSettings()">⚙️ Backup Settings</button>
+          <button class="action-button success" onclick="exportBackup()">💾 Backup Now</button>
+        </div>
+      </div>
+
+      <!-- NEW PROJECT FORM -->
+      <div class="project-form">
+        <h3>Add New Project</h3>
+        <div class="form-row">
+          <!-- Project Name -->
+          <div>
+            <label for="newProjectName">Project Name</label>
+            <input type="text" id="newProjectName" class="form-input" placeholder="Project Name" />
+          </div>
+          <!-- Go Live Date -->
+          <div>
+            <label for="newProjectGoLive">Go Live Date</label>
+            <input type="date" id="newProjectGoLive" class="form-input" />
+          </div>
+          <!-- Status -->
+          <div>
+            <label for="newProjectStatus">Status</label>
+            <select id="newProjectStatus" class="form-select">
+              <option value="active">Active</option>
+              <option value="archived">Archived</option>
+            </select>
+          </div>
+          <!-- Color -->
+          <div>
+            <label for="newProjectColor">Color</label>
+            <select id="newProjectColor" class="form-select">
+              <option value="#e57373" style="color: #e57373;">● Red</option>
+              <option value="#ffb74d" style="color: #ffb74d;">● Orange</option>
+              <option value="#a1887f" style="color: #a1887f;">● Brown</option>
+              <option value="#fff176" style="color: #fff176;">● Yellow</option>
+              <option value="#aed581" style="color: #aed581;">● Light Green</option>
+              <option value="#81c784" style="color: #81c784;">● Green</option>
+              <option value="#4fc3f7" style="color: #4fc3f7;">● Light Blue</option>
+              <option value="#64b5f6" style="color: #64b5f6;">● Blue</option>
+              <option value="#ba68c8" style="color: #ba68c8;">● Purple</option>
+              <option value="#f48fb1" style="color: #f48fb1;">● Pink</option>
+              <option value="#e0e0e0" style="color: #e0e0e0;">● Gray</option>
+            </select>
+          </div>
+          <!-- Add Button -->
+          <div style="align-self: flex-end;">
+            <button class="add-btn" onclick="addProject()">Add Project</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- EDIT PROJECT DETAILS (hidden by default) -->
+      <div id="projectDetails" style="display: none;" class="project-form">
+        <h3 id="editProjectTitle">Edit Project</h3>
+        <div class="form-row">
+          <!-- Project Name -->
+          <div>
+            <label for="editProjectName">Project Name</label>
+            <input type="text" id="editProjectName" class="form-input" placeholder="Project Name" />
+          </div>
+          <!-- Go Live Date -->
+          <div>
+            <label for="editProjectGoLive">Go Live Date</label>
+            <input type="date" id="editProjectGoLive" class="form-input" />
+          </div>
+          <!-- Status -->
+          <div>
+            <label for="editProjectStatus">Status</label>
+            <select id="editProjectStatus" class="form-select">
+              <option value="active">Active</option>
+              <option value="archived">Archived</option>
+            </select>
+          </div>
+          <!-- Color -->
+          <div>
+            <label for="editProjectColor">Color</label>
+            <select id="editProjectColor" class="form-select">
+              <option value="#e57373" style="color: #e57373;">● Red</option>
+              <option value="#ffb74d" style="color: #ffb74d;">● Orange</option>
+              <option value="#a1887f" style="color: #a1887f;">● Brown</option>
+              <option value="#fff176" style="color: #fff176;">● Yellow</option>
+              <option value="#aed581" style="color: #aed581;">● Light Green</option>
+              <option value="#81c784" style="color: #81c784;">● Green</option>
+              <option value="#4fc3f7" style="color: #4fc3f7;">● Light Blue</option>
+              <option value="#64b5f6" style="color: #64b5f6;">● Blue</option>
+              <option value="#ba68c8" style="color: #ba68c8;">● Purple</option>
+              <option value="#f48fb1" style="color: #f48fb1;">● Pink</option>
+              <option value="#e0e0e0" style="color: #e0e0e0;">● Gray</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <button class="add-btn" onclick="saveProjectDetails()">Save Changes</button>
+          <button class="add-btn" style="background: #6c757d;" onclick="cancelEditProject()">Cancel</button>
+        </div>
+
+        <!-- TEAM ASSIGNMENTS SECTION -->
+        <div class="team-section">
+          <h4>Team Assignments</h4>
+          <div class="form-row">
+            <input type="text" id="teamMemberName" class="form-input" placeholder="Team Member Name" />
+            <input type="text" id="teamMemberArea" class="form-input" placeholder="Process Area" />
+            <button class="add-btn" onclick="addTeamMember()">Add Team Member</button>
+          </div>
+          <div id="teamList">
+            <!-- Team members will be listed here -->
+          </div>
+        </div>
+
+        <!-- RECURRING WEEKLY TASKS SECTION -->
+        <div class="recurring-section">
+          <h4>Recurring Weekly Tasks</h4>
+          <div class="form-row">
+            <input type="text" id="recurringTaskText" class="form-input" placeholder="Recurring task description" />
+            <button class="add-btn" onclick="addRecurringTask()">Add Recurring Task</button>
+          </div>
+          <div id="recurringTasksList">
+            <!-- Recurring tasks will appear here -->
+          </div>
+        </div>
+      </div>
+
+      <!-- PROJECTS LIST -->
+      <div class="projects-list" id="projectsList"></div>
+    </div>
+  </div>
+
+  <script>
+    /* ====================================== */
+    /* DATA MODELS & DEFAULTS */
+    /* ====================================== */
+    let projects = [];
+    let tasks = {}; // tasks[projectName] = [ { content, project, meetingType, timestamp, completed }, ... ]
+    let weeklyMatrix = {}; // weeklyMatrix["CategoryName--TaskName"] = { projectName: true/false }
+    let weeklyTaskCategories = []; // [ { category: "Phase Updates", tasks: ["Task 1", "Task 2"] }, ... ]
+    let backupSettings = {
+      autoBackupCount: 0,
+      backupReminders: true,
+      lastBackup: null,
+      lastRecurringRun: null
+    };
+
+    // A few sample default projects (optional)
+    const defaultProjects = [
+      {
+        name: 'Project A',
+        status: 'active',
+        goLiveDate: '',
+        team: [],
+        recurringTasks: [],
+        color: '#64b5f6'
+      },
+      {
+        name: 'Project B',
+        status: 'active',
+        goLiveDate: '',
+        team: [],
+        recurringTasks: [],
+        color: '#64b5f6'
+      },
+      {
+        name: 'Project C',
+        status: 'active',
+        goLiveDate: '',
+        team: [],
+        recurringTasks: [],
+        color: '#64b5f6'
+      }
+    ];
+
+    /* ====================================== */
+    /* UTIL: SORT PROJECTS (Active A→Z, Archived A→Z) */
+    /* ====================================== */
+    function sortProjectsArray() {
+      projects.sort((a, b) => {
+        if (a.status !== b.status) {
+          return a.status === 'active' ? -1 : 1;
+        }
+        return a.name.localeCompare(b.name);
+      });
+    }
+
+    /* ====================================== */
+    /* STORAGE: LOAD & SAVE */
+    /* ====================================== */
+    function loadData() {
+      try {
+        const p = localStorage.getItem('pm_projects');
+        const t = localStorage.getItem('pm_tasks');
+        const w = localStorage.getItem('pm_weeklyMatrix');
+        const wc = localStorage.getItem('pm_weeklyCategories');
+        const bs = localStorage.getItem('pm_backupSettings');
+
+        projects = p ? JSON.parse(p) : JSON.parse(JSON.stringify(defaultProjects));
+        tasks = t ? JSON.parse(t) : {};
+        weeklyMatrix = w ? JSON.parse(w) : {};
+        weeklyTaskCategories = wc ? JSON.parse(wc) : [];
+        backupSettings = bs ? JSON.parse(bs) : backupSettings;
+
+        // Sort projects
+        sortProjectsArray();
+
+        // Run recurring tasks if it's Monday and we haven't run them today
+        runRecurringTasks();
+
+        updatePageCounts();
+        updateProjectSelector();
+        updateProjectsList();
+        updateWeeklyMatrix();
+        updateMasterView();
+        showRecentTasks();
+      } catch (e) {
+        console.warn('Error loading data, using defaults:', e);
+        projects = JSON.parse(JSON.stringify(defaultProjects));
+        tasks = {};
+        weeklyMatrix = {};
+        weeklyTaskCategories = [];
+        backupSettings = {
+          autoBackupCount: 0,
+          backupReminders: true,
+          lastBackup: null,
+          lastRecurringRun: null
+        };
+      }
+    }
+
+    function saveData() {
+      try {
+        localStorage.setItem('pm_projects', JSON.stringify(projects));
+        localStorage.setItem('pm_tasks', JSON.stringify(tasks));
+        localStorage.setItem('pm_weeklyMatrix', JSON.stringify(weeklyMatrix));
+        localStorage.setItem('pm_weeklyCategories', JSON.stringify(weeklyTaskCategories));
+        localStorage.setItem('pm_backupSettings', JSON.stringify(backupSettings));
+        updatePageCounts();
+        checkAutoBackupTrigger();
+      } catch (e) {
+        console.error('Error saving data:', e);
+      }
+    }
+
+    /* ====================================== */
+    /* PAGE SWITCHING */
+    /* ====================================== */
+    function showPage(pageId) {
+      document.querySelectorAll('.page').forEach((p) => p.classList.remove('active'));
+      document.getElementById(pageId + 'Page').classList.add('active');
+      document.querySelectorAll('.nav-btn').forEach((btn) => btn.classList.remove('active'));
+      document.querySelector(`[onclick="showPage('${pageId}')"]`).classList.add('active');
+    }
+
+    /* ====================================== */
+    /* HELPER: FORMAT DATE (MM/DD/YYYY, HH:MM AM/PM) */
+    /* ====================================== */
+    function formatTimestamp(dateObj) {
+      const datePart = dateObj.toLocaleDateString('en-US'); // "MM/DD/YYYY"
+      const timePart = dateObj.toLocaleTimeString('en-US', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true
+      }); // "HH:MM AM/PM"
+      return `${datePart}, ${timePart}`;
+    }
+
+    function formatDateOnly(yyyyMmDd) {
+      if (!yyyyMmDd) return '';
+      const [yy, mm, dd] = yyyyMmDd.split('-');
+      return `${mm}/${dd}/${yy.slice(-2)}`;
+    }
+
+    /* ====================================== */
+    /* QUICK CAPTURE / RECENT TASKS */
+    /* ====================================== */
+    // Update the "Add Task" button to listen for Enter (but only if not Shift+Enter)
+    document.getElementById('noteInput').addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        document.getElementById('addNote').click();
+      }
+    });
+
+    document.getElementById('projectSelect').addEventListener('change', function () {
+      const val = this.value;
+      document.getElementById('currentProject').textContent = val ? val : 'No Project Selected';
+    });
+    document.getElementById('addNote').addEventListener('click', () => {
+      const projectName = document.getElementById('projectSelect').value;
+      const meetingType = document.getElementById('meetingTypeSelect').value;
+      const content = document.getElementById('noteInput').value.trim();
+      if (!projectName) {
+        alert('Please select a project first');
+        return;
+      }
+      if (!content) {
+        alert('Please enter some text');
+        return;
+      }
+      const now = new Date();
+      const ts = formatTimestamp(now);
+      if (!tasks[projectName]) tasks[projectName] = [];
+      tasks[projectName].unshift({
+        content,
+        project: projectName,
+        meetingType,
+        timestamp: ts,
+        completed: false
+      });
+      document.getElementById('noteInput').value = '';
+      saveData();
+      showRecentTasks();
+      updateMasterView(); // Immediately reflect in All Tasks
+    });
+
+    function showRecentTasks() {
+      const recentList = document.getElementById('recentTasksList');
+      let html = '';
+      // Flatten all tasks → sort newest first → take top 5
+      const all = [];
+      Object.keys(tasks).forEach((proj) => {
+        tasks[proj].forEach((t) => {
+          all.push({ ...t });
+        });
+      });
+      if (all.length === 0) {
+        recentList.innerHTML = '<div class="empty-state">No tasks added today</div>';
+        return;
+      }
+      const recent5 = all
+        .sort((a, b) => {
+          return new Date(b.timestamp) - new Date(a.timestamp);
+        })
+        .slice(0, 5);
+
+      recent5.forEach((task) => {
+        const color = getProjectColor(task.project);
+        html += `
+          <div class="recent-item">
+            <!-- Row 1: Project Color Dot + Project Name -->
+            <div class="project-line">
+              <span class="project-color-dot" style="background: ${color};"></span>
+              ${task.project}
+            </div>
+            <!-- Row 2: Date + Time (12hr) + Meeting Badge -->
+            <div class="date-line">
+              ${task.timestamp}
+              <span class="meeting-type-badge">${task.meetingType}</span>
+            </div>
+            <!-- Row 3: Actual Content -->
+            <div class="content-line">
+              ${task.content}
+            </div>
+          </div>
+        `;
+      });
+      recentList.innerHTML = html;
+    }
+
+    function getProjectColor(projName) {
+      const p = projects.find((x) => x.name === projName);
+      return p && p.color ? p.color : '#666';
+    }
+
+    /* ====================================== */
+    /* ALL TASKS (MASTER VIEW) */
+    /* ====================================== */
+    function updateMasterView() {
+      const masterDiv = document.getElementById('masterContent');
+      if (projects.length === 0) {
+        masterDiv.innerHTML = '<div class="empty-state">No projects found</div>';
+        return;
+      }
+      let html = '';
+      // Iterate through each project (already sorted)
+      projects.forEach((proj, projIdx) => {
+        // Project Header
+        const color = proj.color || '#666';
+        const goLive = proj.goLiveDate ? formatDateOnly(proj.goLiveDate) : '';
+        const allTasksForProject = tasks[proj.name] || [];
+        const pending = allTasksForProject.filter((t) => !t.completed);
+        const completed = allTasksForProject.filter((t) => t.completed);
+
+        html += `
+          <div class="project-block" id="projectBlock_${projIdx}">
+            <div class="project-header">
+              <div class="left">
+                <span class="project-color-dot" style="background: ${color};"></span>
+                <span class="project-name">${proj.name}</span>
+                <span class="meta-info">Status:</span>
+                <span class="project-status-badge ${
+                  proj.status === 'active' ? 'status-active' : 'status-archived'
+                }">${proj.status.toUpperCase()}</span>
+                ${goLive ? `<span class="go-live-badge">Go Live: ${goLive}</span>` : ''}
+              </div>
+              <div class="meta-info">
+                Team: 
+                ${
+                  proj.team && proj.team.length
+                    ? proj.team.map((m) => `${m.name} (${m.area})`).join(', ')
+                    : '—'
+                }
+              </div>
+            </div>
+            <div class="project-body">
+              <!-- Pending Tasks Section -->
+              <h4>Pending Tasks (${pending.length})</h4>
+        `;
+        // List each pending task row
+        pending.forEach((t, tIdx) => {
+          html += `
+            <div class="task-row" id="taskRow_${projIdx}_${tIdx}">
+              <input type="checkbox" onchange="markComplete('${proj.name}', ${tIdx})" />
+              <div class="task-text">${t.content}</div>
+              <div class="task-timestamp">${t.timestamp}</div>
+              <span class="meeting-badge">${t.meetingType}</span>
+              <button class="edit-btn" title="Edit Task" onclick="editTask('${proj.name}', ${tIdx})">✏</button>
+              <button class="delete-btn" title="Delete Task" onclick="deleteTask('${proj.name}', ${tIdx})">🗑</button>
+            </div>
+          `;
+        });
+        // Completed section (collapsed by default)
+        html += `
+              <div class="completed-section">
+                <div class="completed-header" onclick="toggleCompletedSection(${projIdx})">
+                  <span class="arrow">▶</span>&nbsp;
+                  Completed Tasks (${completed.length})
+                </div>
+                <div class="completed-list" id="completedList_${projIdx}" style="display: none;">
+        `;
+        completed.forEach((t, cIdx) => {
+          html += `
+                  <div class="task-row">
+                    <input type="checkbox" checked disabled />
+                    <div class="task-text">${t.content}</div>
+                    <div class="task-timestamp">${t.timestamp}</div>
+                    <span class="meeting-badge">${t.meetingType}</span>
+                    <button class="delete-btn" title="Remove Completed Task" onclick="deleteCompletedTask('${proj.name}', ${cIdx})">🗑</button>
+                  </div>
+          `;
+        });
+        html += `
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+
+      masterDiv.innerHTML = html;
+    }
+
+    function markComplete(projectName, tIdx) {
+      // When a pending task is checked, mark it completed and rerender
+      if (!tasks[projectName]) return;
+      tasks[projectName][tIdx].completed = true;
+      saveData();
+      updateMasterView();
+    }
+
+    function editTask(projectName, tIdx) {
+      const oldContent = tasks[projectName][tIdx].content;
+      const newContent = prompt('Edit this task:', oldContent);
+      if (newContent !== null && newContent.trim() !== '') {
+        tasks[projectName][tIdx].content = newContent.trim();
+        saveData();
+        updateMasterView();
+      }
+    }
+
+    function deleteTask(projectName, tIdx) {
+      if (!tasks[projectName]) return;
+      if (confirm('Delete this task?')) {
+        tasks[projectName].splice(tIdx, 1);
+        saveData();
+        updateMasterView();
+      }
+    }
+
+    function toggleCompletedSection(projIdx) {
+      const listDiv = document.getElementById(`completedList_${projIdx}`);
+      const headerDiv = listDiv.previousElementSibling.querySelector('.arrow');
+      if (listDiv.style.display === 'none') {
+        listDiv.style.display = 'block';
+        headerDiv.textContent = '▼';
+      } else {
+        listDiv.style.display = 'none';
+        headerDiv.textContent = '▶';
+      }
+    }
+
+    function deleteCompletedTask(projectName, cIdx) {
+      // cIdx here refers to completedIndex in the list of completed tasks
+      const all = tasks[projectName] || [];
+      // Build an array of indexes of completed tasks
+      const completedIndexes = all
+        .map((t, i) => (t.completed ? i : -1))
+        .filter((i) => i >= 0);
+      const realIndex = completedIndexes[cIdx];
+      if (realIndex !== undefined) {
+        if (confirm('Delete this completed task?')) {
+          tasks[projectName].splice(realIndex, 1);
+          saveData();
+          updateMasterView();
+        }
+      }
+    }
+
+    /* ====================================== */
+    /* WEEKLY MATRIX FUNCTIONS */
+    /* ====================================== */
+    function updateWeeklyMatrix() {
+      const matrixDiv = document.getElementById('weeklyMatrix');
+      const activeProjects = projects.filter((p) => p.status === 'active');
+      if (activeProjects.length === 0) {
+        matrixDiv.innerHTML =
+          '<div class="empty-state">No active projects found. Go to "Manage Projects" to add some.</div>';
+        return;
+      }
+
+      let html = `
+        <table class="matrix-table">
+          <thead>
+            <tr>
+              <th class="task-name">Weekly Tasks</th>
+              ${activeProjects
+                .map(
+                  (project) => `
+                <th class="project-column">
+                  <span class="project-color-dot" style="background: ${project.color};"></span>
+                  ${project.name}
+                </th>`
+                )
+                .join('')}
+            </tr>
+          </thead>
+          <tbody>
+      `;
+
+      weeklyTaskCategories.forEach((cat) => {
+        // Category header row
+        html += `
+          <tr class="category-row">
+            <td colspan="${1 + activeProjects.length}">${cat.category}</td>
+          </tr>
+        `;
+        // Each task under that category
+        cat.tasks.forEach((task) => {
+          html += '<tr>';
+          html += `<td class="task-name">${task}</td>`;
+          activeProjects.forEach((project) => {
+            const key = `${cat.category}--${task}`;
+            const checked =
+              weeklyMatrix[key] && weeklyMatrix[key][project.name] ? 'checked' : '';
+            html += `
+              <td>
+                <input
+                  type="checkbox"
+                  onchange="toggleWeeklyCheckbox('${cat.category}', '${task}', '${project.name}', this.checked)"
+                  ${checked}
+                />
+              </td>`;
+          });
+          html += '</tr>';
+        });
+      });
+
+      html += `
+          </tbody>
+        </table>
+      `;
+      matrixDiv.innerHTML = html;
+    }
+
+    function toggleWeeklyCheckbox(category, task, projName, isChecked) {
+      const key = `${category}--${task}`;
+      if (!weeklyMatrix[key]) weeklyMatrix[key] = {};
+      weeklyMatrix[key][projName] = isChecked;
+      backupSettings.autoBackupCount++;
+      saveData();
+    }
+
+    function showAddTaskForm() {
+      document.getElementById('addTaskForm').style.display = 'block';
+    }
+    function hideAddTaskForm() {
+      document.getElementById('addTaskForm').style.display = 'none';
+    }
+
+    function addTaskCategory() {
+      const name = document.getElementById('newCategoryName').value.trim();
+      const text = document.getElementById('newCategoryTasks').value.trim();
+      if (!name) {
+        alert('Please enter a category name');
+        return;
+      }
+      const lines = text
+        .split('\n')
+        .map((l) => l.trim())
+        .filter((l) => l);
+      if (lines.length === 0) {
+        alert('Please enter at least one task');
+        return;
+      }
+      weeklyTaskCategories.push({ category: name, tasks: lines });
+      document.getElementById('newCategoryName').value = '';
+      document.getElementById('newCategoryTasks').value = '';
+      saveData();
+      updateWeeklyMatrix();
+      hideAddTaskForm();
+    }
+
+    function showEditTasksForm() {
+      document.getElementById('editTasksForm').style.display = 'block';
+      populateEditTasksList();
+    }
+    function hideEditTasksForm() {
+      document.getElementById('editTasksForm').style.display = 'none';
+    }
+
+    function populateEditTasksList() {
+      const listDiv = document.getElementById('editTasksList');
+      if (weeklyTaskCategories.length === 0) {
+        listDiv.innerHTML = '<div class="empty-state">No categories to edit</div>';
+        return;
+      }
+      let html = '';
+      weeklyTaskCategories.forEach((cat, i) => {
+        html += `
+          <div class="edit-category-item">
+            <div class="edit-controls">
+              <button title="Move Up" onclick="moveCategoryUp(${i})">↑</button>
+              <button title="Move Down" onclick="moveCategoryDown(${i})">↓</button>
+              <input type="text" id="editCatName${i}" value="${cat.category}" />
+            </div>
+            <textarea id="editCatTasks${i}">${cat.tasks.join('\n')}</textarea>
+          </div>
+        `;
+      });
+      listDiv.innerHTML = html;
+    }
+
+    function moveCategoryUp(idx) {
+      if (idx <= 0) return;
+      const tmp = weeklyTaskCategories[idx - 1];
+      weeklyTaskCategories[idx - 1] = weeklyTaskCategories[idx];
+      weeklyTaskCategories[idx] = tmp;
+      saveData();
+      populateEditTasksList();
+    }
+
+    function moveCategoryDown(idx) {
+      if (idx >= weeklyTaskCategories.length - 1) return;
+      const tmp = weeklyTaskCategories[idx + 1];
+      weeklyTaskCategories[idx + 1] = weeklyTaskCategories[idx];
+      weeklyTaskCategories[idx] = tmp;
+      saveData();
+      populateEditTasksList();
+    }
+
+    function saveTaskEdits() {
+      for (let i = 0; i < weeklyTaskCategories.length; i++) {
+        const newName = document.getElementById(`editCatName${i}`).value.trim();
+        const newTasksRaw = document.getElementById(`editCatTasks${i}`).value.trim();
+        if (!newName || !newTasksRaw) {
+          alert('Category name and tasks cannot be empty');
+          return;
+        }
+        weeklyTaskCategories[i].category = newName;
+        weeklyTaskCategories[i].tasks = newTasksRaw.split('\n').map((l) => l.trim()).filter((l) => l);
+      }
+      saveData();
+      updateWeeklyMatrix();
+      hideEditTasksForm();
+    }
+
+    function resetMatrix() {
+      if (confirm('Are you sure you want to clear all weekly checkboxes?')) {
+        weeklyMatrix = {};
+        saveData();
+        updateWeeklyMatrix();
+      }
+    }
+
+    function exportMatrix() {
+      const blob = new Blob(
+        [JSON.stringify({ categories: weeklyTaskCategories, matrix: weeklyMatrix }, null, 2)],
+        { type: 'application/json' }
+      );
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `weekly-matrix-export-${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    /* ====================================== */
+    /* MANAGE PROJECTS FUNCTIONS */
+    /* ====================================== */
+    function addProject() {
+      const name = document.getElementById('newProjectName').value.trim();
+      const goLiveDate = document.getElementById('newProjectGoLive').value; // "YYYY-MM-DD"
+      const status = document.getElementById('newProjectStatus').value;
+      const color = document.getElementById('newProjectColor').value;
+
+      if (!name) {
+        alert('Please enter a project name');
+        return;
+      }
+      if (projects.some((p) => p.name === name)) {
+        alert('Project name already exists');
+        return;
+      }
+      projects.push({
+        name,
+        status,
+        goLiveDate,
+        color: color || '#64b5f6',
+        team: [],
+        recurringTasks: []
+      });
+      sortProjectsArray();
+      document.getElementById('newProjectName').value = '';
+      document.getElementById('newProjectGoLive').value = '';
+      document.getElementById('newProjectStatus').value = 'active';
+      document.getElementById('newProjectColor').value = '#64b5f6';
+      saveData();
+      updateProjectSelector();
+      updateProjectsList();
+      updateWeeklyMatrix();
+      updateStats();
+    }
+
+    function updateProjectsList() {
+      const listDiv = document.getElementById('projectsList');
+      if (projects.length === 0) {
+        listDiv.innerHTML = '<div class="empty-state">No projects found</div>';
+        return;
+      }
+      let html = '';
+      projects.forEach((project, idx) => {
+        const taskCount = tasks[project.name] ? tasks[project.name].length : 0;
+        const pendingCount = tasks[project.name] ? tasks[project.name].filter((t) => !t.completed).length : 0;
+        const color = project.color || '#666';
+        html += `
+          <div class="project-item">
+            <div>
+              <div class="project-title">
+                <span class="project-color-dot" style="background: ${color};"></span>
+                ${project.name}
+              </div>
+              <div class="project-meta">
+                Status:
+                <span class="project-status-badge ${
+                  project.status === 'active' ? 'status-active' : 'status-archived'
+                }">
+                  ${project.status.toUpperCase()}
+                </span>
+                ${project.goLiveDate ? ` • Go Live: ${formatDateOnly(project.goLiveDate)}` : ''}
+                <br />
+                ${taskCount} total tasks • ${pendingCount} pending
+                ${project.team.length > 0
+                  ? `<br />Team: ${project.team.map((m) => `${m.name} (${m.area})`).join(', ')}`
+                  : ''}
+                ${project.recurringTasks.length > 0
+                  ? `<br />Recurring: ${project.recurringTasks.join(', ')}`
+                  : ''}
+              </div>
+            </div>
+            <div class="project-actions">
+              <button class="action-btn btn-edit" onclick="editProject(${idx})">Edit</button>
+              ${
+                project.status === 'active'
+                  ? `<button class="action-btn btn-archive" onclick="archiveProject(${idx})">Archive</button>`
+                  : `<button class="action-btn btn-activate" onclick="activateProject(${idx})">Activate</button>`
+              }
+              <button class="action-btn btn-delete" onclick="deleteProject(${idx})">Delete</button>
+            </div>
+          </div>
+        `;
+      });
+      listDiv.innerHTML = html;
+    }
+
+    function editProject(index) {
+      const p = projects[index];
+      document.getElementById('editProjectTitle').textContent = `Edit Project: ${p.name}`;
+      document.getElementById('editProjectName').value = p.name;
+      document.getElementById('editProjectGoLive').value = p.goLiveDate;
+      document.getElementById('editProjectStatus').value = p.status;
+      document.getElementById('editProjectColor').value = p.color || '#64b5f6';
+      document.getElementById('projectDetails').setAttribute('data-editIndex', index);
+      // Populate Team List
+      renderTeamList(index);
+      // Populate Recurring Tasks List
+      renderRecurringList(index);
+      document.getElementById('projectDetails').style.display = 'block';
+    }
+
+    function cancelEditProject() {
+      document.getElementById('projectDetails').style.display = 'none';
+    }
+
+    function saveProjectDetails() {
+      const index = parseInt(document.getElementById('projectDetails').getAttribute('data-editIndex'));
+      const oldName = projects[index].name;
+      const name = document.getElementById('editProjectName').value.trim();
+      const goLiveDate = document.getElementById('editProjectGoLive').value;
+      const status = document.getElementById('editProjectStatus').value;
+      const color = document.getElementById('editProjectColor').value;
+
+      if (!name) {
+        alert('Project name cannot be empty');
+        return;
+      }
+      if (name !== oldName && projects.some((p, i) => p.name === name && i !== index)) {
+        alert('Project name already exists');
+        return;
+      }
+
+      // Update project fields
+      projects[index].name = name;
+      projects[index].goLiveDate = goLiveDate;
+      projects[index].status = status;
+      projects[index].color = color;
+
+      // If name changed, move tasks & recurring tasks over
+      if (name !== oldName) {
+        if (tasks[oldName]) {
+          tasks[name] = tasks[oldName];
+          delete tasks[oldName];
+        }
+      }
+
+      sortProjectsArray();
+      saveData();
+      updateProjectSelector();
+      updateProjectsList();
+      updateWeeklyMatrix();
+      updateStats();
+      document.getElementById('projectDetails').style.display = 'none';
+    }
+
+    function archiveProject(index) {
+      projects[index].status = 'archived';
+      sortProjectsArray();
+      saveData();
+      updateProjectSelector();
+      updateProjectsList();
+      updateWeeklyMatrix();
+      updateStats();
+    }
+
+    function activateProject(index) {
+      projects[index].status = 'active';
+      sortProjectsArray();
+      saveData();
+      updateProjectSelector();
+      updateProjectsList();
+      updateWeeklyMatrix();
+      updateStats();
+    }
+
+    function deleteProject(index) {
+      const pn = projects[index].name;
+      if (confirm(`Delete project "${pn}" and all its tasks? This cannot be undone.`)) {
+        projects.splice(index, 1);
+        delete tasks[pn];
+        // Remove from weeklyMatrix
+        Object.keys(weeklyMatrix).forEach((key) => {
+          if (weeklyMatrix[key][pn] !== undefined) {
+            delete weeklyMatrix[key][pn];
+          }
+        });
+        saveData();
+        updateProjectSelector();
+        updateProjectsList();
+        updateWeeklyMatrix();
+        updateStats();
+      }
+    }
+
+    /* ====================================== */
+    /* UPDATE PROJECT SELECTOR (Quick Capture) */
+    /* ====================================== */
+    function updateProjectSelector() {
+      const select = document.getElementById('projectSelect');
+      select.innerHTML = '<option value="">Select Project...</option>';
+      projects
+        .filter((p) => p.status === 'active')
+        .forEach((project) => {
+          const option = document.createElement('option');
+          option.value = project.name;
+          option.textContent = project.name;
+          select.appendChild(option);
+        });
+    }
+
+    /* ====================================== */
+    /* UPDATE STATS */
+    /* ====================================== */
+    function updateStats() {
+      const activeCount = projects.filter((p) => p.status === 'active').length;
+      document.getElementById('activeProjectsCount').textContent = activeCount;
+
+      let total = 0,
+        pending = 0;
+      Object.keys(tasks).forEach((proj) => {
+        total += tasks[proj].length;
+        pending += tasks[proj].filter((t) => !t.completed).length;
+      });
+      document.getElementById('totalTasksCount').textContent = total;
+      document.getElementById('pendingTasksCount').textContent = pending;
+      document.getElementById('completedTasksCount').textContent = total - pending;
+    }
+
+    function updatePageCounts() {
+      updateStats();
+    }
+
+    /* ====================================== */
+    /* BACKUP / IMPORT / EXPORT */
+    /* ====================================== */
+    function exportBackup() {
+      const backupData = {
+        version: '1.0',
+        exportDate: new Date().toISOString(),
+        data: {
+          projects,
+          tasks,
+          weeklyMatrix,
+          weeklyTaskCategories,
+          backupSettings
+        }
+      };
+      const blob = new Blob([JSON.stringify(backupData, null, 2)], {
+        type: 'application/json'
+      });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `project-task-management-backup-${new Date()
+        .toISOString()
+        .split('T')[0]}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      backupSettings.lastBackup = new Date().toISOString();
+      saveData();
+    }
+
+    function importBackup(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const backupData = JSON.parse(e.target.result);
+          if (
+            backupData &&
+            backupData.data &&
+            backupData.data.projects &&
+            backupData.data.tasks
+          ) {
+            projects = backupData.data.projects;
+            tasks = backupData.data.tasks;
+            weeklyMatrix = backupData.data.weeklyMatrix || {};
+            weeklyTaskCategories = backupData.data.weeklyTaskCategories || [];
+            backupSettings = backupData.data.backupSettings || backupSettings;
+            sortProjectsArray();
+            saveData();
+            updateProjectSelector();
+            updateProjectsList();
+            updateWeeklyMatrix();
+            updateMasterView();
+            showRecentTasks();
+            alert('✅ Import successful!');
+          } else {
+            throw new Error('Invalid format');
+          }
+        } catch (err) {
+          alert('❌ Import failed: File format is incorrect.');
+          console.error(err);
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    function exportData() {
+      const exportData = {
+        version: '1.0',
+        exportDate: new Date().toISOString(),
+        projects: projects,
+        tasks: tasks,
+        weeklyMatrix: weeklyMatrix,
+        weeklyTaskCategories: weeklyTaskCategories
+      };
+      const blob = new Blob([JSON.stringify(exportData, null, 2)], {
+        type: 'application/json'
+      });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `project-task-data-export-${new Date()
+        .toISOString()
+        .split('T')[0]}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    function checkAutoBackupTrigger() {
+      if (backupSettings.autoBackupCount >= 50) {
+        setTimeout(() => {
+          if (confirm("🚨 You've made many changes since your last backup. Backup now?")) {
+            exportBackup();
+          }
+        }, 500);
+        backupSettings.autoBackupCount = 0;
+      }
+    }
+
+    function showBackupSettings() {
+      alert('Backup settings feature coming soon!');
+    }
+
+    /* ====================================== */
+    /* RECURRING TASKS: RUN EVERY MONDAY ONCE */
+    /* ====================================== */
+    function runRecurringTasks() {
+      const today = new Date();
+      const dayOfWeek = today.getDay(); // Sunday=0, Monday=1, etc.
+      if (dayOfWeek !== 1) return; // only run on Monday
+      const todayStr = today.toISOString().split('T')[0]; // "YYYY-MM-DD"
+      if (backupSettings.lastRecurringRun === todayStr) return;
+
+      // For every project, for each recurringTasks entry, add a new pending task:
+      projects.forEach((proj) => {
+        if (proj.recurringTasks && proj.recurringTasks.length > 0) {
+          proj.recurringTasks.forEach((desc) => {
+            const ts = formatTimestamp(new Date());
+            if (!tasks[proj.name]) tasks[proj.name] = [];
+            tasks[proj.name].unshift({
+              content: desc,
+              project: proj.name,
+              meetingType: 'Recurring',
+              timestamp: ts,
+              completed: false
+            });
+          });
+        }
+      });
+      backupSettings.lastRecurringRun = todayStr;
+      saveData();
+      updateMasterView();
+    }
+
+    /* ====================================== */
+    /* MANAGE PROJECTS: TEAM + RECURRING UI */
+    /* ====================================== */
+    function addTeamMember() {
+      const index = parseInt(document.getElementById('projectDetails').getAttribute('data-editIndex'));
+      const name = document.getElementById('teamMemberName').value.trim();
+      const area = document.getElementById('teamMemberArea').value.trim();
+      if (!name || !area) {
+        alert('Please provide both a name and area');
+        return;
+      }
+      projects[index].team.push({ name, area });
+      document.getElementById('teamMemberName').value = '';
+      document.getElementById('teamMemberArea').value = '';
+      saveData();
+      renderTeamList(index);
+      updateProjectsList();
+    }
+
+    function renderTeamList(projectIndex) {
+      const listDiv = document.getElementById('teamList');
+      const teamArr = projects[projectIndex].team || [];
+      if (teamArr.length === 0) {
+        listDiv.innerHTML = '<div class="empty-state">No team members added</div>';
+        return;
+      }
+      let html = '';
+      teamArr.forEach((m, i) => {
+        html += `
+          <div class="team-item">
+            ${m.name} (${m.area})
+            <button title="Remove Member" onclick="removeTeamMember(${projectIndex}, ${i})">🗑</button>
+          </div>
+        `;
+      });
+      listDiv.innerHTML = html;
+    }
+
+    function removeTeamMember(projectIndex, memberIndex) {
+      if (confirm('Remove this team member?')) {
+        projects[projectIndex].team.splice(memberIndex, 1);
+        saveData();
+        renderTeamList(projectIndex);
+        updateProjectsList();
+      }
+    }
+
+    function addRecurringTask() {
+      const index = parseInt(document.getElementById('projectDetails').getAttribute('data-editIndex'));
+      const desc = document.getElementById('recurringTaskText').value.trim();
+      if (!desc) {
+        alert('Please enter a recurring task description');
+        return;
+      }
+      projects[index].recurringTasks.push(desc);
+      document.getElementById('recurringTaskText').value = '';
+      saveData();
+      renderRecurringList(index);
+      updateProjectsList();
+    }
+
+    function renderRecurringList(projectIndex) {
+      const listDiv = document.getElementById('recurringTasksList');
+      const recArr = projects[projectIndex].recurringTasks || [];
+      if (recArr.length === 0) {
+        listDiv.innerHTML = '<div class="empty-state">No recurring tasks</div>';
+        return;
+      }
+      let html = '';
+      recArr.forEach((r, i) => {
+        html += `
+          <div class="recurring-item">
+            ${r}
+            <button title="Remove Recurring Task" onclick="removeRecurringTask(${projectIndex}, ${i})">🗑</button>
+          </div>
+        `;
+      });
+      listDiv.innerHTML = html;
+    }
+
+    function removeRecurringTask(projectIndex, taskIndex) {
+      if (confirm('Remove this recurring task?')) {
+        projects[projectIndex].recurringTasks.splice(taskIndex, 1);
+        saveData();
+        renderRecurringList(projectIndex);
+        updateProjectsList();
+      }
+    }
+
+    /* ====================================== */
+    /* INITIAL LOAD */
+    /* ====================================== */
+    window.addEventListener('load', () => {
+      loadData();
+    });
+  </script>
+</body>
+</html>
