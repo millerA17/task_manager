@@ -1,0 +1,104 @@
+{
+  "version": "1.0",
+  "exportDate": "2025-06-07T01:56:56.819Z",
+  "data": {
+    "projects": [
+      {
+        "name": "Project A",
+        "status": "active",
+        "goLiveDate": "2025-08-01",
+        "team": [],
+        "recurringTasks": [],
+        "color": "#ffb74d"
+      },
+      {
+        "name": "Project B",
+        "status": "active",
+        "goLiveDate": "",
+        "team": [],
+        "recurringTasks": [],
+        "color": "#64b5f6"
+      },
+      {
+        "name": "Project C",
+        "status": "active",
+        "goLiveDate": "2025-09-01",
+        "team": [],
+        "recurringTasks": [],
+        "color": "#ba68c8"
+      }
+    ],
+    "tasks": {
+      "Project A": [
+        {
+          "content": "Test Task",
+          "project": "Project A",
+          "meetingType": "Client Meeting",
+          "timestamp": "6/6/2025, 09:56 PM",
+          "completed": false
+        }
+      ],
+      "Project B": [
+        {
+          "content": "Follow up with Mary",
+          "project": "Project B",
+          "meetingType": "Internal Status",
+          "timestamp": "6/6/2025, 09:56 PM",
+          "completed": false
+        },
+        {
+          "content": "Call Bob",
+          "project": "Project B",
+          "meetingType": "Internal Status",
+          "timestamp": "6/6/2025, 09:56 PM",
+          "completed": false
+        }
+      ],
+      "Project C": [
+        {
+          "content": "Make new connections",
+          "project": "Project C",
+          "meetingType": "General",
+          "timestamp": "6/6/2025, 09:56 PM",
+          "completed": false
+        }
+      ]
+    },
+    "weeklyMatrix": {},
+    "weeklyTaskCategories": [
+      {
+        "category": "Project Updates",
+        "tasks": [
+          "Task Status - % Complete",
+          "Phase Dates",
+          "Current Phase",
+          "Project Health",
+          "Summary"
+        ]
+      },
+      {
+        "category": "Status Report",
+        "tasks": [
+          "Report Drafted",
+          "Budget Report",
+          "Uploaded to Share Drive",
+          "Uploaded to Status Sheet",
+          "Delivered to Client"
+        ]
+      },
+      {
+        "category": "Dev Tasks",
+        "tasks": [
+          "Review In Flight Dev",
+          "Conduct Stand Up (if needed)"
+        ]
+      }
+    ],
+    "backupSettings": {
+      "autoBackupCount": 0,
+      "backupReminders": true,
+      "lastBackup": null,
+      "lastRecurringRun": null
+    }
+  }
+}
